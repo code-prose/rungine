@@ -13,12 +13,22 @@ fn main() {
     let document = Html::parse_document(file.as_str());
     // println!("{:?}", document);
     let paragraph = Selector::parse("p").unwrap();
-    println!("{:?}", paragraph);
-
-    
+    // println!("{:?}", paragraph);
+    for element in document.select(&paragraph) {
+        println!("{:?}", element.value().attr("value"));
+    }
 }
 
 struct Parser;
+
+impl Parser {
+    fn strip_tags(element: &str) -> Vec<String> {
+        element.matches
+
+
+    }
+
+}
 
 // impl parse for Parser {
 //     fn parse(file: String) -> HashMap<String, u16> {
