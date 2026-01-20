@@ -17,22 +17,40 @@ fn main() {
         }
 
     };
-    EventReader::new(file);
+    Parser::parse(file, &fp);
 }
 
-struct Parser;
 
 // Start with support xml then we can move onto HTML and PDF 
 impl Parser {
-    fn parse_xml() -> Vec<String> {
+    fn parse(file: std::fs::File, fp: &str) -> Vec<String> {
+        let idx = fp.rfind('.').unwrap();
+        let file_ext = fp.clone().split_at(idx).1;
+
+        match file_ext {
+            "xhtml" => Parser::parse_xhtml(file),
+            "html" => Parser::parse_html(file),
+            "pdf" => Parser::parse_pdf(file),
+            "xml" => Parser::parse_xml(file),
+            _ => {
+                eprintln!("File-type not supported");
+                std::process::exit(1)
+            }
+        }
+    }
+    fn parse_xml(file: std::fs::File) -> Vec<String> {
+        EventReader::new(file);
+    }
+
+    fn parse_xhtml(file: std::fs::File) -> Vec<String> {
         todo!()
     }
 
-    fn parse_html() -> Vec<String> {
+    fn parse_html(file: std::fs::File) -> Vec<String> {
         todo!()
     }
 
-    fn parse_pdf() -> Vec<String> {
+    fn parse_pdf(file: std::fs::File) -> Vec<String> {
         todo!()
     }
 }
@@ -43,3 +61,5 @@ fn open_file(file_name: &str) -> Result<std::fs::File, std::io::Error> {
         Err(e) => Err(e)
     }
 }
+
+struct Parser;
