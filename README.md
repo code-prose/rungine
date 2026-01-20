@@ -18,6 +18,5 @@ TF-IDF implemented in Rust!
 [ ] Multithread?
 [ ] PDF, HTML support
 
-
 ### Questions
 - Do I want to grab hrefs to further expand on the accuracy? i.e. using number of links to as an indicator

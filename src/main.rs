@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::collections::HashMap;
-use xml::EventReader;
+use xml::reader::{XmlEvent, EventReader};
 
 
 
@@ -17,7 +17,8 @@ fn main() {
         }
 
     };
-    Parser::parse(file, &fp);
+    let doc = Parser::parse(file, &fp);
+    println!("{doc:?}")
 }
 
 
@@ -25,13 +26,14 @@ fn main() {
 impl Parser {
     fn parse(file: std::fs::File, fp: &str) -> Vec<String> {
         let idx = fp.rfind('.').unwrap();
-        let file_ext = fp.clone().split_at(idx).1;
+        let file_ext = fp.split_at(idx).1;
+        println!("{:?}", file_ext);
 
         match file_ext {
-            "xhtml" => Parser::parse_xhtml(file),
-            "html" => Parser::parse_html(file),
-            "pdf" => Parser::parse_pdf(file),
-            "xml" => Parser::parse_xml(file),
+            ".xhtml" => Parser::parse_xhtml(file),
+            ".html" => Parser::parse_html(file),
+            ".pdf" => Parser::parse_pdf(file),
+            ".xml" => Parser::parse_xml(file),
             _ => {
                 eprintln!("File-type not supported");
                 std::process::exit(1)
@@ -39,11 +41,21 @@ impl Parser {
         }
     }
     fn parse_xml(file: std::fs::File) -> Vec<String> {
-        EventReader::new(file);
+        todo!()
     }
 
     fn parse_xhtml(file: std::fs::File) -> Vec<String> {
-        todo!()
+        let mut doc = Vec::new();
+        let er = EventReader::new(file);
+        for event in er.into_iter() {
+            // println!("{event:?}");
+            let event = event.unwrap();
+            if let XmlEvent::Characters(text) = event {
+                doc.push(text);
+            }
+        }
+
+        doc
     }
 
     fn parse_html(file: std::fs::File) -> Vec<String> {
