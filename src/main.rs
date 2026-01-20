@@ -1,24 +1,29 @@
 use std::fs::File;
 use std::collections::HashMap;
 use xml::reader::{XmlEvent, EventReader};
+use std::io;
 
 
 
 
-fn main() {
+fn main() -> io::Result<()> {
+    let dir = String::from("./tests/docs.gl/gl3/").to_string();
+    for fp in std::fs::read_dir(&dir)? {
+        let fp = fp.unwrap().file_name();
+        let full_path = dir.clone() + fp.to_str().unwrap();
+        let file = match open_file(&full_path) {
+            Ok(contents) => contents,
+            Err(err) => {
+                eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
+                std::process::exit(1)
+            }
+        };
+        let doc = Parser::parse(file, &full_path);
+        println!("{doc:?}");
+    }
+    
 
-    let fp = String::from("./tests/docs.gl/gl3/glActiveTexture.xhtml").to_string();
-
-    let file = match open_file(&fp) {
-        Ok(contents) => contents,
-        Err(err) => {
-            eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
-            std::process::exit(1)
-        }
-
-    };
-    let doc = Parser::parse(file, &fp);
-    println!("{doc:?}")
+    Ok(())
 }
 
 
