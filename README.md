@@ -3,9 +3,9 @@ TF-IDF implemented in Rust!
 
 ## References
 - [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
-- [HTML Parser]()
-- [Rust Docs](https://rust-lang.org/tools/install/)
 - [XML-RS](https://crates.io/crates/xml-rs)
+- [Rust Docs](https://rust-lang.org/tools/install/)
+- [HTML Parser]()
 
 ### Information
 - [XML-RS](https://crates.io/crates/xml-rs) is a [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML) parser
@@ -15,7 +15,8 @@ TF-IDF implemented in Rust!
 [ ] Parse files (Tokenizer??? How do I delimit?)
 [ ] Create index
 [ ] Write to DB? (NoSQL?)
-[ ] ???
+[ ] Multithread?
+[ ] PDF, HTML support
 
 
 ### Questions
