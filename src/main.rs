@@ -2,24 +2,23 @@ use std::fs::File;
 use std::collections::HashMap;
 use xml::reader::{XmlEvent, EventReader};
 use std::io;
-
-
-
+use std::path::Path;
+use std::path::PathBuf;
 
 fn main() -> io::Result<()> {
     let dir = String::from("./tests/docs.gl/gl3/");
     for fp in std::fs::read_dir(&dir)? {
-        let fp = fp.unwrap().file_name();
-        let full_path = dir.clone() + fp.to_str().unwrap();
-        let file = match open_file(&full_path) {
-            Ok(contents) => contents,
+        let fp = fp?.path();
+        let file = match open_file(&fp) {
+            Ok(f) => f,
             Err(err) => {
                 eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
                 std::process::exit(1)
             }
         };
-        let doc = Parser::parse(file, &full_path);
-        println!("Parsed: {full_path}")
+        let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap());
+        let fp_display = fp.display();
+        println!("Parsed: {fp_display}")
         // println!("{doc:?}");
     }
     
@@ -89,7 +88,7 @@ impl Parser {
     }
 }
 
-fn open_file(file_name: &str) -> Result<std::fs::File, std::io::Error> {
+fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Error> {
     match File::open(file_name) {
         Ok(contents) => Ok(contents),
         Err(e) => Err(e)
