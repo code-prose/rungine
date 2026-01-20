@@ -7,7 +7,7 @@ use std::io;
 
 
 fn main() -> io::Result<()> {
-    let dir = String::from("./tests/docs.gl/gl3/").to_string();
+    let dir = String::from("./tests/docs.gl/gl3/");
     for fp in std::fs::read_dir(&dir)? {
         let fp = fp.unwrap().file_name();
         let full_path = dir.clone() + fp.to_str().unwrap();
@@ -19,7 +19,8 @@ fn main() -> io::Result<()> {
             }
         };
         let doc = Parser::parse(file, &full_path);
-        println!("{doc:?}");
+        println!("Parsed: {full_path}")
+        // println!("{doc:?}");
     }
     
 
@@ -45,7 +46,6 @@ impl Parser {
     fn parse(file: std::fs::File, fp: &str) -> Result<String, ParserError> {
         let idx = fp.rfind('.').unwrap();
         let file_ext = fp.split_at(idx).1;
-        println!("{:?}", file_ext);
 
         match file_ext {
             ".xhtml" => Parser::parse_xhtml(file),
