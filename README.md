@@ -11,12 +11,12 @@ TF-IDF implemented in Rust!
 - [XML-RS](https://crates.io/crates/xml-rs) is a [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML) parser
 
 ### Left to implement
-[ ] Parse directories
-[ ] Parse files (Tokenizer??? How do I delimit?)
-[ ] Create index
-[ ] Write to DB? (NoSQL?)
-[ ] Multithread?
-[ ] PDF, HTML support
+- [ ] Parse directories
+- [ ] Parse files (Tokenizer??? How do I delimit?)
+- [ ] Create index
+- [ ] Write to DB? (NoSQL?)
+- [ ] Multithread?
+- [ ] PDF, HTML support
 
 ### Questions
 - Do I want to grab hrefs to further expand on the accuracy? i.e. using number of links to as an indicator
