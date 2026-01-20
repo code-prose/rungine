@@ -20,12 +20,17 @@ fn main() {
 
 struct Parser;
 
-// let's do a naive strip for now and then we can come back and then of a better approach
+// Start with support xml then we can move onto HTML and PDF 
 impl Parser {
     fn parse_xml() -> Vec<String> {
         todo!()
     }
+
     fn parse_html() -> Vec<String> {
+        todo!()
+    }
+
+    fn parse_pdf() -> Vec<String> {
         todo!()
     }
 }

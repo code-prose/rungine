@@ -5,6 +5,7 @@ TF-IDF implemented in Rust!
 - [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
 - [XML Parser]()
 - [HTML Parser]()
+- [Rust Docs](https://rust-lang.org/tools/install/)
 
 ### Left to implement
 [ ] Parse directories
