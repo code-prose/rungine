@@ -22,9 +22,22 @@ fn main() {
 }
 
 
+#[derive(Debug)]
+enum ParserError {
+    XmlParserError {
+        err: xml::reader::Error
+    },
+    HtmlParserError,
+    XHtmlParserError {
+        err: xml::reader::Error
+    },
+    PdfParserError,
+    FileTypeError
+}
+
 // Start with support xml then we can move onto HTML and PDF 
 impl Parser {
-    fn parse(file: std::fs::File, fp: &str) -> Vec<String> {
+    fn parse(file: std::fs::File, fp: &str) -> Result<String, ParserError> {
         let idx = fp.rfind('.').unwrap();
         let file_ext = fp.split_at(idx).1;
         println!("{:?}", file_ext);
@@ -35,34 +48,38 @@ impl Parser {
             ".pdf" => Parser::parse_pdf(file),
             ".xml" => Parser::parse_xml(file),
             _ => {
-                eprintln!("File-type not supported");
-                std::process::exit(1)
+                Err(ParserError::FileTypeError)
             }
         }
     }
-    fn parse_xml(file: std::fs::File) -> Vec<String> {
+
+    fn parse_xml(file: std::fs::File) -> Result<String, ParserError> {
         todo!()
     }
 
-    fn parse_xhtml(file: std::fs::File) -> Vec<String> {
-        let mut doc = Vec::new();
+    fn parse_xhtml(file: std::fs::File) -> Result<String, ParserError> {
+        let mut doc = String::from("");
         let er = EventReader::new(file);
         for event in er.into_iter() {
             // println!("{event:?}");
-            let event = event.unwrap();
+            let event = event.map_err({
+                |err| ParserError::XHtmlParserError{
+                    err: err
+                }
+            })?;
             if let XmlEvent::Characters(text) = event {
-                doc.push(text);
+                doc.push_str(&text);
             }
         }
 
-        doc
+        Ok(doc)
     }
 
-    fn parse_html(file: std::fs::File) -> Vec<String> {
+    fn parse_html(file: std::fs::File) -> Result<String, ParserError> {
         todo!()
     }
 
-    fn parse_pdf(file: std::fs::File) -> Vec<String> {
+    fn parse_pdf(file: std::fs::File) -> Result<String, ParserError> {
         todo!()
     }
 }
