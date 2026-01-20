@@ -22,23 +22,12 @@ struct Parser;
 
 // let's do a naive strip for now and then we can come back and then of a better approach
 impl Parser {
-    // fn strip_tags(element: &str) -> Vec<String> {
-    // }
-
-}
-
-// impl parse for Parser {
-//     fn parse(file: String) -> HashMap<String, u16> {
-//         todo!()
-//     }
-// }
-
-fn html_parser() {
-    todo!()
-}
-
-fn iter_dirs() {
-    todo!()
+    fn parse_xml() -> Vec<String> {
+        todo!()
+    }
+    fn parse_html() -> Vec<String> {
+        todo!()
+    }
 }
 
 fn read_file(file_name: &str) -> Result<String, std::io::Error> {
