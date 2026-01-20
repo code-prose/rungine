@@ -1,6 +1,10 @@
 ## Rungine
-IDF-TF implemented in Rust!
+TF-IDF implemented in Rust!
 
+## References
+- [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
+- [XML Parser]()
+- [HTML Parser]()
 
 ### Left to implement
 [ ] Parse directories

@@ -15,18 +15,15 @@ fn main() {
     let paragraph = Selector::parse("p").unwrap();
     // println!("{:?}", paragraph);
     for element in document.select(&paragraph) {
-        println!("{:?}", element.value().attr("value"));
+        // println!("{:?}", element.value().attr("value"));
     }
 }
 
 struct Parser;
-
+// let's do a naive strip for now and then we can come back and then of a better approach
 impl Parser {
-    fn strip_tags(element: &str) -> Vec<String> {
-        element.matches
-
-
-    }
+    // fn strip_tags(element: &str) -> Vec<String> {
+    // }
 
 }
 
