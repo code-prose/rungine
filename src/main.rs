@@ -1,9 +1,7 @@
 use std::fs::File;
-use std::collections::HashMap;
 use xml::reader::{XmlEvent, EventReader};
 use std::io;
 use std::path::Path;
-use std::path::PathBuf;
 
 fn main() -> io::Result<()> {
     let dir = String::from("./tests/docs.gl/gl3/");
