@@ -1,25 +1,25 @@
 use std::fs::read_to_string;
 use std::collections::HashMap;
-use scraper::Selector;
-use scraper::Html;
 
 
 
 
 fn main() {
 
-    let file = read_to_string("./tests/std-fs-file.html").unwrap();
+    let fp = String::from("./tests/std-fs-file.html2").to_string();
+    let file = match read_file(&fp) {
+        Ok(contents) => contents,
+        Err(err) => {
+            eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
+            std::process::exit(1)
+        }
+
+    };
     println!("{}", file);
-    let document = Html::parse_document(file.as_str());
-    // println!("{:?}", document);
-    let paragraph = Selector::parse("p").unwrap();
-    // println!("{:?}", paragraph);
-    for element in document.select(&paragraph) {
-        // println!("{:?}", element.value().attr("value"));
-    }
 }
 
 struct Parser;
+
 // let's do a naive strip for now and then we can come back and then of a better approach
 impl Parser {
     // fn strip_tags(element: &str) -> Vec<String> {
@@ -41,6 +41,9 @@ fn iter_dirs() {
     todo!()
 }
 
-fn read_file(file_name: String) -> Vec<String> {
-    todo!()
+fn read_file(file_name: &str) -> Result<String, std::io::Error> {
+    match read_to_string(file_name) {
+        Ok(contents) => Ok(contents),
+        Err(e) => Err(e)
+    }
 }
