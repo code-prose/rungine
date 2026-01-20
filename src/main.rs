@@ -1,13 +1,15 @@
-use std::fs::read_to_string;
+use std::fs::File;
 use std::collections::HashMap;
+use xml::EventReader;
 
 
 
 
 fn main() {
 
-    let fp = String::from("./tests/std-fs-file.html2").to_string();
-    let file = match read_file(&fp) {
+    let fp = String::from("./tests/docs.gl/gl3/glActiveTexture.xhtml").to_string();
+
+    let file = match open_file(&fp) {
         Ok(contents) => contents,
         Err(err) => {
             eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
@@ -15,7 +17,7 @@ fn main() {
         }
 
     };
-    println!("{}", file);
+    EventReader::new(file);
 }
 
 struct Parser;
@@ -35,8 +37,8 @@ impl Parser {
     }
 }
 
-fn read_file(file_name: &str) -> Result<String, std::io::Error> {
-    match read_to_string(file_name) {
+fn open_file(file_name: &str) -> Result<std::fs::File, std::io::Error> {
+    match File::open(file_name) {
         Ok(contents) => Ok(contents),
         Err(e) => Err(e)
     }

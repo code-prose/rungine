@@ -7,6 +7,9 @@ TF-IDF implemented in Rust!
 - [Rust Docs](https://rust-lang.org/tools/install/)
 - [XML-RS](https://crates.io/crates/xml-rs)
 
+### Information
+- [XML-RS](https://crates.io/crates/xml-rs) is a [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML) parser
+
 ### Left to implement
 [ ] Parse directories
 [ ] Parse files (Tokenizer??? How do I delimit?)
