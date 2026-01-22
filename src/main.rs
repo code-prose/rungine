@@ -1,8 +1,11 @@
+#![feature(string_remove_matches)]
+
 use std::fs::File;
 use xml::reader::{XmlEvent, EventReader};
 use std::io;
 use std::path::Path;
 use regex::Regex;
+
 
 fn main() -> io::Result<()> {
     let dir = String::from("./tests/docs.gl/gl3/");
@@ -40,7 +43,6 @@ enum ParserError {
 }
 
 // Start with support xml then we can move onto HTML and PDF 
-#![feature(string_remove_matches)]
 impl Parser {
     fn parse(file: std::fs::File, fp: &str) -> Result<String, ParserError> {
         let idx = fp.rfind('.').unwrap();
@@ -81,11 +83,11 @@ impl Parser {
         Ok(Self::clean_text(doc))
     }
 
-    fn clean_text(text: String) -> String {
-        let text = text.remove_matches(r"\n");
-        let single_space = Regex::new(r"\s+").unwrap().replace_all(text, " ");
-        println!("Clean:\n {text:?}");
-        single_space
+    fn clean_text(mut text: String) -> String {
+        text.remove_matches("\n");
+        let single_space = Regex::new(r"\s+").unwrap().replace_all(&text, " ");
+        println!("Clean:\n {single_space:?}");
+        single_space.to_string()
     }
 
     fn parse_html(file: std::fs::File) -> Result<String, ParserError> {
