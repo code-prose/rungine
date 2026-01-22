@@ -19,6 +19,9 @@ fn main() -> io::Result<()> {
             }
         };
         let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
+        let hmap = Indexer::create_map(doc);
+
+        println!("{hmap:?}");
         let fp_display = fp.display();
         // println!("Parsed: {fp_display}");
         // println!("{doc:?}")
@@ -27,9 +30,16 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
+
 struct TFIDF {
-    tf:  f64,
-    idf: f64
+    term: String,
+    tf:  f32,
+    idf: f32
+}
+
+struct Document {
+    path: String,
+    tfidf: TFIDF
 }
 
 struct Indexer;
@@ -51,6 +61,7 @@ impl Indexer {
     fn create_index(text: String) -> HashMap<String, TFIDF> {
         todo!()
     }
+
 }
 
 #[derive(Debug)]
