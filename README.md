@@ -11,9 +11,9 @@ TF-IDF implemented in Rust!
 - [XML-RS](https://crates.io/crates/xml-rs) is a [SAX](https://en.wikipedia.org/wiki/Simple_API_for_XML) parser
 
 ### Left to implement
-- [ ] Parse directories
-- [ ] Parse files (Tokenizer??? How do I delimit?)
-- [ ] Create index
+- [x] Parse directories
+- [x] Parse files
+- [x] Create index
 - [ ] Write to DB? (NoSQL?)
 - [ ] Multithread?
 - [ ] PDF, HTML support
