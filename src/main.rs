@@ -42,9 +42,11 @@ struct Document {
 struct Indexer;
 
 impl Indexer {
-    fn create_map(text: String) -> HashMap<String, i64> {
+    fn create_map(text: String) -> (HashMap<String, i64>, i64) {
         let mut hmap = HashMap::new();
         // this is pretty naive, it's breaking up function calls right now
+        let word_iter = text.split_whitespace();
+        let num_words = word_iter.clone().count();
         for word in text.split_whitespace() {
             if hmap.contains_key(word) {
                 let key_ref = hmap.get_mut(word).unwrap();
@@ -53,7 +55,7 @@ impl Indexer {
                 hmap.insert(word.to_string(), 1);
             }
         }
-        hmap
+        (hmap, num_words as i64)
     }
 
     fn create_index(text: String) -> HashMap<String, TFIDF> {
