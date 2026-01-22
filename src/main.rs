@@ -1,11 +1,11 @@
 #![feature(string_remove_matches)]
 
+use regex::Regex;
+use std::collections::HashMap;
 use std::fs::File;
-use xml::reader::{XmlEvent, EventReader};
 use std::io;
 use std::path::Path;
-use regex::Regex;
-
+use xml::reader::{EventReader, XmlEvent};
 
 fn main() -> io::Result<()> {
     let dir = String::from("./tests/docs.gl/gl3/");
@@ -23,26 +23,46 @@ fn main() -> io::Result<()> {
         // println!("Parsed: {fp_display}");
         // println!("{doc:?}")
     }
-    
 
     Ok(())
 }
 
+struct TFIDF {
+    tf:  f64,
+    idf: f64
+}
+
+struct Indexer;
+
+impl Indexer {
+    fn create_map(text: String) -> HashMap<String, i64> {
+        let mut hmap = HashMap::new();
+        for word in text.split_whitespace() {
+            if hmap.contains_key(word) {
+                let key_ref = hmap.get_mut(word).unwrap();
+                *key_ref += 1;
+            } else {
+                hmap.insert(word.to_string(), 1);
+            }
+        }
+        hmap
+    }
+
+    fn create_index(text: String) -> HashMap<String, TFIDF> {
+        todo!()
+    }
+}
 
 #[derive(Debug)]
 enum ParserError {
-    XmlParserError {
-        err: xml::reader::Error
-    },
+    XmlParserError { err: xml::reader::Error },
     HtmlParserError,
-    XHtmlParserError {
-        err: xml::reader::Error
-    },
+    XHtmlParserError { err: xml::reader::Error },
     PdfParserError,
-    FileTypeError
+    FileTypeError,
 }
 
-// Start with support xml then we can move onto HTML and PDF 
+// Start with support xml then we can move onto HTML and PDF
 impl Parser {
     fn parse(file: std::fs::File, fp: &str) -> Result<String, ParserError> {
         let idx = fp.rfind('.').unwrap();
@@ -53,9 +73,7 @@ impl Parser {
             ".html" => Parser::parse_html(file),
             ".pdf" => Parser::parse_pdf(file),
             ".xml" => Parser::parse_xml(file),
-            _ => {
-                Err(ParserError::FileTypeError)
-            }
+            _ => Err(ParserError::FileTypeError),
         }
     }
 
@@ -67,16 +85,9 @@ impl Parser {
         let mut doc = String::from("");
         let er = EventReader::new(file);
         for event in er.into_iter() {
-            // println!("{event:?}");
-            let event = event.map_err({
-                |err| ParserError::XHtmlParserError{
-                    err: err
-                }
-            })?;
+            let event = event.map_err(|err| ParserError::XHtmlParserError { err: err })?;
             if let XmlEvent::Characters(text) = event {
-                doc.push_str(
-                    &text
-                );
+                doc.push_str(&text);
             }
         }
 
@@ -86,7 +97,6 @@ impl Parser {
     fn clean_text(mut text: String) -> String {
         text.remove_matches("\n");
         let single_space = Regex::new(r"\s+").unwrap().replace_all(&text, " ");
-        println!("Clean:\n {single_space:?}");
         single_space.to_string()
     }
 
@@ -102,7 +112,7 @@ impl Parser {
 fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Error> {
     match File::open(file_name) {
         Ok(contents) => Ok(contents),
-        Err(e) => Err(e)
+        Err(e) => Err(e),
     }
 }
 
