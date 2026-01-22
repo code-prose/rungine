@@ -26,7 +26,6 @@ fn main() -> io::Result<()> {
         let tfidf = Indexer::create_index(hmap, num_words);
         documents.push(Document{path: fp.to_str().unwrap().to_string(), tfidfs: tfidf});
 
-
     }
 
     Ok(())
