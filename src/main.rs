@@ -22,9 +22,6 @@ fn main() -> io::Result<()> {
         let hmap = Indexer::create_map(doc);
 
         println!("{hmap:?}");
-        let fp_display = fp.display();
-        // println!("Parsed: {fp_display}");
-        // println!("{doc:?}")
     }
 
     Ok(())
@@ -47,6 +44,7 @@ struct Indexer;
 impl Indexer {
     fn create_map(text: String) -> HashMap<String, i64> {
         let mut hmap = HashMap::new();
+        // this is pretty naive, it's breaking up function calls right now
         for word in text.split_whitespace() {
             if hmap.contains_key(word) {
                 let key_ref = hmap.get_mut(word).unwrap();
