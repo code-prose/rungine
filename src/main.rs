@@ -9,6 +9,7 @@ use xml::reader::{EventReader, XmlEvent};
 
 fn main() -> io::Result<()> {
     let dir = String::from("./tests/docs.gl/gl3/");
+    let mut documents = Vec::new();
     for fp in std::fs::read_dir(&dir)? {
         let fp = fp?.path();
         let file = match open_file(&fp) {
@@ -19,9 +20,13 @@ fn main() -> io::Result<()> {
             }
         };
         let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
-        let hmap = Indexer::create_map(doc);
-
+        let (hmap, num_words) = Indexer::create_map(doc);
         println!("{hmap:?}");
+        
+        let tfidf = Indexer::create_index(hmap, num_words);
+        documents.push(Document{path: fp.to_str().unwrap().to_string(), tfidfs: tfidf});
+
+
     }
 
     Ok(())
@@ -36,7 +41,7 @@ struct TFIDF {
 
 struct Document {
     path: String,
-    tfidf: TFIDF
+    tfidfs: Vec<TFIDF>
 }
 
 struct Indexer;
@@ -58,8 +63,16 @@ impl Indexer {
         (hmap, num_words as i64)
     }
 
-    fn create_index(text: String) -> HashMap<String, TFIDF> {
-        todo!()
+    fn create_index(hmap: HashMap<String, i64>, count: i64) -> Vec<TFIDF> {
+        let mut tfidfs: Vec<TFIDF> = Vec::new();
+        for (k, v) in hmap.into_iter() {
+           tfidfs.push(TFIDF{
+                term: k,
+                tf: v as f32,
+                idf: (v as f32 / count as f32)
+           });
+        }
+        tfidfs
     }
 
 }
