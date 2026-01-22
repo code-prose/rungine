@@ -21,3 +21,4 @@ TF-IDF implemented in Rust!
 
 ### Questions
 - Do I want to grab hrefs to further expand on the accuracy? i.e. using number of links to as an indicator
+- Do I need to re-index old documents if I add new ones?
