@@ -25,12 +25,15 @@ fn main() -> io::Result<()> {
         
         let tfidf = Indexer::create_index(hmap, num_words);
         documents.push(Document{path: fp.to_str().unwrap().to_string(), tfidfs: tfidf});
-
     }
 
     Ok(())
 }
 
+enum Indexed {
+    Indexed,
+    Unindexed
+}
 
 struct TFIDF {
     term: String,
@@ -40,7 +43,8 @@ struct TFIDF {
 
 struct Document {
     path: String,
-    tfidfs: Vec<TFIDF>
+    tfidfs: Vec<TFIDF>,
+    // indexed: Indexed
 }
 
 struct Indexer;
