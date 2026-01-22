@@ -15,6 +15,7 @@ TF-IDF implemented in Rust!
 - [x] Parse files
 - [x] Create index
 - [ ] Write to DB? (NoSQL?)
+- [ ] Better "word" splitting [create_map](./src/main.rs:52)
 - [ ] Multithread?
 - [ ] PDF, HTML support
 
