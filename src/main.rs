@@ -7,29 +7,6 @@ use std::io;
 use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
 
-fn main() -> io::Result<()> {
-    let dir = String::from("./tests/docs.gl/gl3/");
-    let mut documents = Vec::new();
-    for fp in std::fs::read_dir(&dir)? {
-        let fp = fp?.path();
-        let file = match open_file(&fp) {
-            Ok(f) => f,
-            Err(err) => {
-                eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
-                std::process::exit(1)
-            }
-        };
-        let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
-        let (hmap, num_words) = Indexer::create_map(doc);
-        println!("{hmap:?}");
-        
-        let tfidf = Indexer::create_index(hmap, num_words);
-        documents.push(Document{path: fp.to_str().unwrap().to_string(), tfidfs: tfidf});
-    }
-
-    Ok(())
-}
-
 enum Indexed {
     Indexed,
     Unindexed
@@ -42,9 +19,15 @@ struct TFIDF {
 }
 
 struct Document {
-    path: String,
+    path: DocPath,
     tfidfs: Vec<TFIDF>,
     // indexed: Indexed
+}
+
+type DocPath = String;
+
+struct Corpus {
+    word_tfidfs: HashMap::<String, Vec::<(f32, DocPath)>>
 }
 
 struct Indexer;
@@ -66,6 +49,7 @@ impl Indexer {
         (hmap, num_words as i64)
     }
 
+    // Maybe rename this...
     fn create_index(hmap: HashMap<String, i64>, count: i64) -> Vec<TFIDF> {
         let mut tfidfs: Vec<TFIDF> = Vec::new();
         for (k, v) in hmap.into_iter() {
@@ -144,3 +128,26 @@ fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Err
 }
 
 struct Parser;
+
+fn main() -> io::Result<()> {
+    let dir = String::from("./tests/docs.gl/gl3/");
+    let mut documents = Vec::new();
+    for fp in std::fs::read_dir(&dir)? {
+        let fp = fp?.path();
+        let file = match open_file(&fp) {
+            Ok(f) => f,
+            Err(err) => {
+                eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
+                std::process::exit(1)
+            }
+        };
+        println!("{fp:?}");
+        let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
+        let (hmap, num_words) = Indexer::create_map(doc);
+        
+        let tfidf = Indexer::create_index(hmap, num_words);
+        documents.push(Document{path: fp.to_str().unwrap().to_string(), tfidfs: tfidf});
+    }
+
+    Ok(())
+}

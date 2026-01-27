@@ -13,7 +13,8 @@ TF-IDF implemented in Rust!
 ### Left to implement
 - [x] Parse directories
 - [x] Parse files
-- [x] Create index
+- [x] Create tf-idfs
+- [ ] Creating word -> sorted tf-idf mapping (Index)
 - [ ] Write to DB? (NoSQL?)
 - [ ] Better "word" splitting [create_map](./src/main.rs:52)
 - [ ] Multithread?
