@@ -2,7 +2,7 @@
 #![feature(core_intrinsics)]
 
 use regex::Regex;
-use std::collections::HashMap;
+use std::{collections::HashMap, num};
 use std::fs::File;
 use std::io;
 use std::path::Path;
@@ -51,11 +51,53 @@ fn main() -> io::Result<()> {
     }
     dbg!(&docs_with_word);
 
-    // for doc in documents {
-    //
-    //
-    // }
-    //
+    let mut word_to_doc: HashMap<String, i64> = HashMap::new();
+    for doc in documents.iter() {
+        for word in doc.word_freqs.keys() {
+            if word_to_doc.contains_key(word) {
+                let key_ref = word_to_doc.get_mut(word).unwrap();
+                *key_ref += 1;
+            } else {
+                word_to_doc.insert(word.clone().to_string(), 1);
+            }
+        }
+    }
+
+    // create map of words to their (idf-tf, document_path)
+    let mut tf_idfs: HashMap<String, Vec::<(f32, DocPath)>> = HashMap::new();
+    for doc in documents.iter() {
+        for word in doc.word_freqs.keys() {
+            if tf_idfs.contains_key(word) {
+                let key_ref = tf_idfs.get_mut(word).unwrap();
+                key_ref.push((
+                    Indexer::calc_tf_idf(
+                    documents.len() as f32,
+                    word_to_doc.get(word).unwrap().clone() as f32,
+                    doc.word_freqs.get(word).unwrap().clone() as f32,
+                    doc.num_words.clone() as f32
+                ),
+                        doc.path.clone()
+                ));
+            } else {
+                let mut t_vec: Vec::<(f32, DocPath)> = Vec::new();
+                t_vec.push((
+                    Indexer::calc_tf_idf(
+                    documents.len() as f32,
+                    word_to_doc.get(word).unwrap().clone() as f32,
+                    doc.word_freqs.get(word).unwrap().clone() as f32,
+                    doc.num_words.clone() as f32
+                ),
+                        doc.path.clone()
+                ));
+    
+                tf_idfs.insert(word.to_string(), t_vec);
+            }
+    
+        }
+    
+    }
+    println!("{:?}", tf_idfs.get("detailC").unwrap());
+    
     Ok(())
 }
 
@@ -85,6 +127,10 @@ impl Indexer {
             }
         }
         (hmap, num_words as i64)
+    }
+
+    fn calc_tf_idf(num_docs: f32, num_docs_appear: f32, term_count: f32, word_count: f32) -> f32 {
+        Indexer::calc_idf(num_docs, num_docs_appear) * Indexer::calc_tf(term_count, word_count)
     }
 
     fn calc_idf(num_docs: f32, num_docs_appear: f32) -> f32 {
