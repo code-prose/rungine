@@ -1,4 +1,5 @@
 #![feature(string_remove_matches)]
+#![feature(core_intrinsics)]
 
 use regex::Regex;
 use std::collections::HashMap;
@@ -6,11 +7,7 @@ use std::fs::File;
 use std::io;
 use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
-
-enum Indexed {
-    Indexed,
-    Unindexed
-}
+use std::intrinsics::log10f32;
 
 struct TFIDF {
     term: String,
@@ -20,20 +17,53 @@ struct TFIDF {
 
 struct Document {
     path: DocPath,
-    tfidfs: Vec<TFIDF>,
-    // indexed: Indexed
+    num_words: i64,
+    word_freqs: HashMap<String, i64>
 }
 
 type DocPath = String;
 
-struct Corpus {
-    word_tfidfs: HashMap::<String, Vec::<(f32, DocPath)>>
+fn main() -> io::Result<()> {
+    let dir = String::from("./tests/docs.gl/gl3/");
+    let mut documents = Vec::new();
+    let mut docs_with_word = HashMap::new();
+    for fp in std::fs::read_dir(&dir)? {
+        let fp = fp?.path();
+        let file = match open_file(&fp) {
+            Ok(f) => f,
+            Err(err) => {
+                eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
+                std::process::exit(1)
+            }
+        };
+        println!("{fp:?}");
+        let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
+        let (hmap, num_words) = Indexer::create_map(doc, &mut docs_with_word);
+        
+        documents.push(
+            Document{
+                path: fp.to_str().unwrap().to_string(),
+                num_words: num_words,
+                word_freqs: hmap
+            }
+        );
+
+    }
+    dbg!(&docs_with_word);
+
+    // for doc in documents {
+    //
+    //
+    // }
+    //
+    Ok(())
 }
 
 struct Indexer;
 
 impl Indexer {
-    fn create_map(text: String) -> (HashMap<String, i64>, i64) {
+    // this is so so at best... Seems my parsing will need to improve in the future
+    fn create_map(text: String, document_frequency: &mut HashMap<String, i64>) -> (HashMap<String, i64>, i64) {
         let mut hmap = HashMap::new();
         // this is pretty naive, it's breaking up function calls right now
         let word_iter = text.split_whitespace();
@@ -44,22 +74,25 @@ impl Indexer {
                 *key_ref += 1;
             } else {
                 hmap.insert(word.to_string(), 1);
+
+                if document_frequency.contains_key(word) {
+                    let key_ref = document_frequency.get_mut(word).unwrap();
+                    *key_ref += 1;
+                } else {
+                    document_frequency.insert(word.to_string(), 1);
+
+                }
             }
         }
         (hmap, num_words as i64)
     }
 
-    // Maybe rename this...
-    fn create_index(hmap: HashMap<String, i64>, count: i64) -> Vec<TFIDF> {
-        let mut tfidfs: Vec<TFIDF> = Vec::new();
-        for (k, v) in hmap.into_iter() {
-           tfidfs.push(TFIDF{
-                term: k,
-                tf: v as f32,
-                idf: (v as f32 / count as f32)
-           });
-        }
-        tfidfs
+    fn calc_idf(num_docs: f32, num_docs_appear: f32) -> f32 {
+        log10f32(num_docs / num_docs_appear)
+    }
+
+    fn calc_tf(term_count: f32, word_count: f32) -> f32 {
+        term_count / word_count
     }
 
 }
@@ -129,25 +162,3 @@ fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Err
 
 struct Parser;
 
-fn main() -> io::Result<()> {
-    let dir = String::from("./tests/docs.gl/gl3/");
-    let mut documents = Vec::new();
-    for fp in std::fs::read_dir(&dir)? {
-        let fp = fp?.path();
-        let file = match open_file(&fp) {
-            Ok(f) => f,
-            Err(err) => {
-                eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
-                std::process::exit(1)
-            }
-        };
-        println!("{fp:?}");
-        let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
-        let (hmap, num_words) = Indexer::create_map(doc);
-        
-        let tfidf = Indexer::create_index(hmap, num_words);
-        documents.push(Document{path: fp.to_str().unwrap().to_string(), tfidfs: tfidf});
-    }
-
-    Ok(())
-}
