@@ -2,18 +2,12 @@
 #![feature(core_intrinsics)]
 
 use regex::Regex;
-use std::{collections::HashMap, num};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io;
 use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
 use std::intrinsics::log10f32;
-
-struct TFIDF {
-    term: String,
-    tf:  f32,
-    idf: f32
-}
 
 struct Document {
     path: DocPath,
@@ -22,84 +16,6 @@ struct Document {
 }
 
 type DocPath = String;
-
-fn main() -> io::Result<()> {
-    let dir = String::from("./tests/docs.gl/gl3/");
-    let mut documents = Vec::new();
-    let mut docs_with_word = HashMap::new();
-    for fp in std::fs::read_dir(&dir)? {
-        let fp = fp?.path();
-        let file = match open_file(&fp) {
-            Ok(f) => f,
-            Err(err) => {
-                eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
-                std::process::exit(1)
-            }
-        };
-        println!("{fp:?}");
-        let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
-        let (hmap, num_words) = Indexer::create_map(doc, &mut docs_with_word);
-        
-        documents.push(
-            Document{
-                path: fp.to_str().unwrap().to_string(),
-                num_words: num_words,
-                word_freqs: hmap
-            }
-        );
-
-    }
-    dbg!(&docs_with_word);
-
-    let mut word_to_doc: HashMap<String, i64> = HashMap::new();
-    for doc in documents.iter() {
-        for word in doc.word_freqs.keys() {
-            if word_to_doc.contains_key(word) {
-                let key_ref = word_to_doc.get_mut(word).unwrap();
-                *key_ref += 1;
-            } else {
-                word_to_doc.insert(word.clone().to_string(), 1);
-            }
-        }
-    }
-
-    // create map of words to their (idf-tf, document_path)
-    let mut tf_idfs: HashMap<String, Vec::<(f32, DocPath)>> = HashMap::new();
-    for doc in documents.iter() {
-        for word in doc.word_freqs.keys() {
-            if tf_idfs.contains_key(word) {
-                let key_ref = tf_idfs.get_mut(word).unwrap();
-                key_ref.push((
-                    Indexer::calc_tf_idf(
-                    documents.len() as f32,
-                    word_to_doc.get(word).unwrap().clone() as f32,
-                    doc.word_freqs.get(word).unwrap().clone() as f32,
-                    doc.num_words.clone() as f32
-                ),
-                        doc.path.clone()
-                ));
-            } else {
-                let mut t_vec: Vec::<(f32, DocPath)> = Vec::new();
-                t_vec.push((
-                    Indexer::calc_tf_idf(
-                    documents.len() as f32,
-                    word_to_doc.get(word).unwrap().clone() as f32,
-                    doc.word_freqs.get(word).unwrap().clone() as f32,
-                    doc.num_words.clone() as f32
-                ),
-                        doc.path.clone()
-                ));
-    
-                tf_idfs.insert(word.to_string(), t_vec);
-            }
-    
-        }
-    
-    }
-    println!("{:?}", tf_idfs.get("detailC").unwrap());
-    
-    Ok(())
-}
 
 struct Indexer;
 
@@ -208,3 +124,79 @@ fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Err
 
 struct Parser;
 
+fn main() -> io::Result<()> {
+    let dir = String::from("./tests/docs.gl/gl3/");
+    let mut documents = Vec::new();
+    let mut docs_with_word = HashMap::new();
+    for fp in std::fs::read_dir(&dir)? {
+        let fp = fp?.path();
+        let file = match open_file(&fp) {
+            Ok(f) => f,
+            Err(err) => {
+                eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
+                std::process::exit(1)
+            }
+        };
+        println!("{fp:?}");
+        let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
+        let (hmap, num_words) = Indexer::create_map(doc, &mut docs_with_word);
+        
+        documents.push(
+            Document{
+                path: fp.to_str().unwrap().to_string(),
+                num_words: num_words,
+                word_freqs: hmap
+            }
+        );
+
+    }
+    dbg!(&docs_with_word);
+
+    let mut word_to_doc: HashMap<String, i64> = HashMap::new();
+    for doc in documents.iter() {
+        for word in doc.word_freqs.keys() {
+            if word_to_doc.contains_key(word) {
+                let key_ref = word_to_doc.get_mut(word).unwrap();
+                *key_ref += 1;
+            } else {
+                word_to_doc.insert(word.clone().to_string(), 1);
+            }
+        }
+    }
+
+    let mut tf_idfs: HashMap<String, Vec::<(f32, DocPath)>> = HashMap::new();
+    for doc in documents.iter() {
+        for word in doc.word_freqs.keys() {
+            if tf_idfs.contains_key(word) {
+                let key_ref = tf_idfs.get_mut(word).unwrap();
+                key_ref.push((
+                    Indexer::calc_tf_idf(
+                    documents.len() as f32,
+                    word_to_doc.get(word).unwrap().clone() as f32,
+                    doc.word_freqs.get(word).unwrap().clone() as f32,
+                    doc.num_words.clone() as f32
+                ),
+                        doc.path.clone()
+                ));
+            } else {
+                let mut t_vec: Vec::<(f32, DocPath)> = Vec::new();
+                t_vec.push((
+                    Indexer::calc_tf_idf(
+                    documents.len() as f32,
+                    word_to_doc.get(word).unwrap().clone() as f32,
+                    doc.word_freqs.get(word).unwrap().clone() as f32,
+                    doc.num_words.clone() as f32
+                ),
+                        doc.path.clone()
+                ));
+    
+                tf_idfs.insert(word.to_string(), t_vec);
+            }
+    
+        }
+    
+    }
+    println!("{:?}", tf_idfs.get("detailC").unwrap());
+    
+    Ok(())
+}
