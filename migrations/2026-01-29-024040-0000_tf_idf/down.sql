@@ -1,0 +1,1 @@
+DROP tf_idf;

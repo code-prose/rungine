@@ -1,6 +1,7 @@
 #![feature(string_remove_matches)]
 #![feature(core_intrinsics)]
 
+use diesel::sql_types::Date;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
@@ -9,8 +10,8 @@ use std::io;
 use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
 
-mod model;
-pub use crate::model::db;
+mod db;
+pub use crate::db;
 
 struct Document {
     path: DocPath,
@@ -128,7 +129,7 @@ fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Err
 
 struct Parser;
 
-fn main() -> io::Result<()> {
+fn holder_while_refactor() -> io::Result<()> {
     let dir = String::from("./tests/docs.gl/gl3/");
     let mut documents = Vec::new();
     let mut docs_with_word = HashMap::new();
@@ -198,4 +199,12 @@ fn main() -> io::Result<()> {
     println!("{:?}", tf_idfs.get("detailC").unwrap());
 
     Ok(())
+
 }
+
+// fn main() -> Result<(), Box<dyn std::error::Error>> {
+//     let conn = db::establish_connection();
+//
+//     let first = document.select((name, modified_date)).load::<(String, Date)>(conn)?;
+//
+// }
