@@ -33,6 +33,7 @@ struct Indexer;
 
 impl Indexer {
     // this is so so at best... Seems my parsing will need to improve in the future
+    // I should implement a lexer to handle this
     fn create_map(
         text: String,
         document_frequency: &mut HashMap<String, i64>,
@@ -208,6 +209,8 @@ fn main() -> io::Result<()> {
     // this is writes, but I am hitting a "unique word constraint fail..." I need to make it so
     // "word" isn't unique but rather the combination is? I should just set a primary key as "ID"
     // and then maybe I can index on word?
+    // UPDATE:
+    // now using rowid... I still need to think up indexing on word?
     {
         // use crate::schema::documents::dsl::*;
         use crate::schema::word_indexes::dsl::*;
