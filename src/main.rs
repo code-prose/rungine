@@ -205,6 +205,46 @@ fn main() -> io::Result<()> {
         }
     }
     println!("{:?}", tf_idfs.get("detailC").unwrap());
+    // this is writes, but I am hitting a "unique word constraint fail..." I need to make it so
+    // "word" isn't unique but rather the combination is? I should just set a primary key as "ID"
+    // and then maybe I can index on word?
+    {
+        // use crate::schema::documents::dsl::*;
+        use crate::schema::word_indexes::dsl::*;
+        use diesel::prelude::*;
+        let mut conn = establish_connection();
+        for (str, vector) in tf_idfs {
+
+            for i in vector {
+                let new_index = NewDocumentIndex {
+                    word: &str,
+                    doc: &i.1,
+                    tf_idf: i.0
+                };
+                diesel::insert_into(word_indexes)
+                    .values(&new_index)
+                    .execute(&mut conn)
+                    .expect("Error saving document");
+
+            }
+
+        }
+
+
+
+        let result = word_indexes
+            .filter(word.ne("test1"))
+            .load::<DocumentIndex>(&mut conn)
+            .expect("Couldn't execute select * from documents");
+
+        println!("Displaying {} documents", result.len());
+        for res in result {
+            println!("{:?}", res);
+        }
+
+
+
+    }
 
     Ok(())
 }
