@@ -10,8 +10,12 @@ use std::io;
 use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
 
+#[macro_use]
+extern crate diesel;
+
 mod db;
-pub use crate::db;
+mod schema;
+mod models;
 
 struct Document {
     path: DocPath,
@@ -199,12 +203,8 @@ fn holder_while_refactor() -> io::Result<()> {
     println!("{:?}", tf_idfs.get("detailC").unwrap());
 
     Ok(())
-
 }
 
-// fn main() -> Result<(), Box<dyn std::error::Error>> {
-//     let conn = db::establish_connection();
-//
-//     let first = document.select((name, modified_date)).load::<(String, Date)>(conn)?;
-//
-// }
+fn main() {
+    println!("Hello, world!");
+}
