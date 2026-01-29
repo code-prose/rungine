@@ -137,7 +137,7 @@ fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Err
 
 struct Parser;
 
-fn holder_while_refactor() -> io::Result<()> {
+fn main() -> io::Result<()> {
     let dir = String::from("./tests/docs.gl/gl3/");
     let mut documents = Vec::new();
     let mut docs_with_word = HashMap::new();
@@ -209,7 +209,7 @@ fn holder_while_refactor() -> io::Result<()> {
     Ok(())
 }
 
-fn main() {
+fn db_tester() {
     use crate::schema::documents::dsl::*;
     use diesel::prelude::*;
     let mut conn = establish_connection();
@@ -233,5 +233,4 @@ fn main() {
     for res in result {
         println!("{:?}", res);
     }
-
 }
