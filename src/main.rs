@@ -1,7 +1,7 @@
 #![feature(string_remove_matches)]
 #![feature(core_intrinsics)]
 
-use diesel::sql_types::Date;
+use diesel::prelude::*;
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
@@ -14,8 +14,12 @@ use xml::reader::{EventReader, XmlEvent};
 extern crate diesel;
 
 mod db;
-mod schema;
 mod models;
+mod schema;
+
+use crate::models::{Documents, NewDocuments};
+use crate::models::{DocumentIndex, NewDocumentIndex};
+use crate::db::establish_connection;
 
 struct Document {
     path: DocPath,
@@ -206,5 +210,28 @@ fn holder_while_refactor() -> io::Result<()> {
 }
 
 fn main() {
-    println!("Hello, world!");
+    use crate::schema::documents::dsl::*;
+    use diesel::prelude::*;
+    let mut conn = establish_connection();
+
+    let new_document = NewDocuments {
+        name: "test2",
+        modified_date: "2026-01-29"
+    };
+
+    diesel::insert_into(documents)
+        .values(&new_document)
+        .execute(&mut conn)
+        .expect("Error saving document");
+    
+    let result = documents
+        .filter(name.ne("test1"))
+        .load::<Documents>(&mut conn)
+        .expect("Couldn't execute select * from documents");
+
+    println!("Displaying {} documents", result.len());
+    for res in result {
+        println!("{:?}", res);
+    }
+
 }

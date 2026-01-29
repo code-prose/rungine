@@ -4,7 +4,7 @@ diesel::table! {
     documents (rowid) {
         rowid -> Integer,
         name -> Text,
-        modified_date -> Date,
+        modified_date -> Text,
     }
 }
 

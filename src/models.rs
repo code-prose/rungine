@@ -2,14 +2,15 @@ use crate::schema::{documents, word_indexes};
 
 #[derive(Insertable)]
 #[table_name = "documents"]
-pub struct NewDocument<'a> {
+pub struct NewDocuments<'a> {
     pub name: &'a str,
     pub modified_date: &'a str,
 }
 
 #[derive(Debug, Queryable, AsChangeset)]
 #[table_name = "documents"]
-pub struct Document {
+pub struct Documents {
+    pub rowid: i32,
     pub name: String,
     pub modified_date: String,
 }
