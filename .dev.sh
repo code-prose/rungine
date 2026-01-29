@@ -1,1 +1,1 @@
-export DATABUSE_URL=sqlite:///database.sqlite
+export DATABASE_URL=rungine.db

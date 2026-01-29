@@ -1,4 +1,4 @@
 CREATE TABLE document (
-    name varchar,
-    modified_date date
-) 
+    name varchar not null
+    , modified_date date not null
+);
