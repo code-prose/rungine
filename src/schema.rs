@@ -7,3 +7,14 @@ diesel::table! {
         modified_date -> Date,
     }
 }
+
+diesel::table! {
+    word_indexes (rowid) {
+        rowid -> Integer,
+        word -> Text,
+        doc -> Text,
+        tf_idf -> Float,
+    }
+}
+
+diesel::allow_tables_to_appear_in_same_query!(documents, word_indexes,);

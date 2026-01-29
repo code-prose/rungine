@@ -26,6 +26,7 @@ pub struct NewDocumentIndex<'a> {
 #[derive(Debug, Queryable, AsChangeset)]
 #[table_name = "word_indexes"]
 pub struct DocumentIndex {
+    pub rowid: i32,
     pub word: String,
     pub doc: String,
     pub tf_idf: f32,
