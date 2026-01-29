@@ -4,15 +4,18 @@
 use regex::Regex;
 use std::collections::HashMap;
 use std::fs::File;
+use std::intrinsics::log10f32;
 use std::io;
 use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
-use std::intrinsics::log10f32;
+
+mod model;
+pub use crate::model::db;
 
 struct Document {
     path: DocPath,
     num_words: i64,
-    word_freqs: HashMap<String, i64>
+    word_freqs: HashMap<String, i64>,
 }
 
 type DocPath = String;
@@ -21,7 +24,10 @@ struct Indexer;
 
 impl Indexer {
     // this is so so at best... Seems my parsing will need to improve in the future
-    fn create_map(text: String, document_frequency: &mut HashMap<String, i64>) -> (HashMap<String, i64>, i64) {
+    fn create_map(
+        text: String,
+        document_frequency: &mut HashMap<String, i64>,
+    ) -> (HashMap<String, i64>, i64) {
         let mut hmap = HashMap::new();
         // this is pretty naive, it's breaking up function calls right now
         let word_iter = text.split_whitespace();
@@ -38,7 +44,6 @@ impl Indexer {
                     *key_ref += 1;
                 } else {
                     document_frequency.insert(word.to_string(), 1);
-
                 }
             }
         }
@@ -56,7 +61,6 @@ impl Indexer {
     fn calc_tf(term_count: f32, word_count: f32) -> f32 {
         term_count / word_count
     }
-
 }
 
 #[derive(Debug)]
@@ -140,15 +144,12 @@ fn main() -> io::Result<()> {
         println!("{fp:?}");
         let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
         let (hmap, num_words) = Indexer::create_map(doc, &mut docs_with_word);
-        
-        documents.push(
-            Document{
-                path: fp.to_str().unwrap().to_string(),
-                num_words: num_words,
-                word_freqs: hmap
-            }
-        );
 
+        documents.push(Document {
+            path: fp.to_str().unwrap().to_string(),
+            num_words: num_words,
+            word_freqs: hmap,
+        });
     }
     dbg!(&docs_with_word);
 
@@ -164,39 +165,37 @@ fn main() -> io::Result<()> {
         }
     }
 
-    let mut tf_idfs: HashMap<String, Vec::<(f32, DocPath)>> = HashMap::new();
+    let mut tf_idfs: HashMap<String, Vec<(f32, DocPath)>> = HashMap::new();
     for doc in documents.iter() {
         for word in doc.word_freqs.keys() {
             if tf_idfs.contains_key(word) {
                 let key_ref = tf_idfs.get_mut(word).unwrap();
                 key_ref.push((
                     Indexer::calc_tf_idf(
-                    documents.len() as f32,
-                    word_to_doc.get(word).unwrap().clone() as f32,
-                    doc.word_freqs.get(word).unwrap().clone() as f32,
-                    doc.num_words.clone() as f32
-                ),
-                        doc.path.clone()
+                        documents.len() as f32,
+                        word_to_doc.get(word).unwrap().clone() as f32,
+                        doc.word_freqs.get(word).unwrap().clone() as f32,
+                        doc.num_words.clone() as f32,
+                    ),
+                    doc.path.clone(),
                 ));
             } else {
-                let mut t_vec: Vec::<(f32, DocPath)> = Vec::new();
+                let mut t_vec: Vec<(f32, DocPath)> = Vec::new();
                 t_vec.push((
                     Indexer::calc_tf_idf(
-                    documents.len() as f32,
-                    word_to_doc.get(word).unwrap().clone() as f32,
-                    doc.word_freqs.get(word).unwrap().clone() as f32,
-                    doc.num_words.clone() as f32
-                ),
-                        doc.path.clone()
+                        documents.len() as f32,
+                        word_to_doc.get(word).unwrap().clone() as f32,
+                        doc.word_freqs.get(word).unwrap().clone() as f32,
+                        doc.num_words.clone() as f32,
+                    ),
+                    doc.path.clone(),
                 ));
-    
+
                 tf_idfs.insert(word.to_string(), t_vec);
             }
-    
         }
-    
     }
     println!("{:?}", tf_idfs.get("detailC").unwrap());
-    
+
     Ok(())
 }
