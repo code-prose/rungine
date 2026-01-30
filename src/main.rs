@@ -28,6 +28,8 @@ struct Document {
 }
 
 type DocPath = String;
+type TfIdf = HashMap<String, Vec<(f32, DocPath)>>;
+type WordMap = HashMap<String, i64>;
 
 struct Indexer;
 
@@ -71,13 +73,62 @@ impl Indexer {
     fn calc_tf(term_count: f32, word_count: f32) -> f32 {
         term_count / word_count
     }
+
+    fn create_tf_idfs(documents: &Vec<Document>, word_map: HashMap<String, i64>) -> TfIdf {
+        let mut tf_idfs: HashMap<String, Vec<(f32, DocPath)>> = HashMap::new();
+        for doc in documents.iter() {
+            for word in doc.word_freqs.keys() {
+                if tf_idfs.contains_key(word) {
+                    let key_ref = tf_idfs.get_mut(word).unwrap();
+                    key_ref.push((
+                        Indexer::calc_tf_idf(
+                            documents.len() as f32,
+                            word_map.get(word).unwrap().clone() as f32,
+                            doc.word_freqs.get(word).unwrap().clone() as f32,
+                            doc.num_words.clone() as f32,
+                        ),
+                        doc.path.clone(),
+                    ));
+                } else {
+                    let mut t_vec: Vec<(f32, DocPath)> = Vec::new();
+                    t_vec.push((
+                        Indexer::calc_tf_idf(
+                            documents.len() as f32,
+                            word_map.get(word).unwrap().clone() as f32,
+                            doc.word_freqs.get(word).unwrap().clone() as f32,
+                            doc.num_words.clone() as f32,
+                        ),
+                        doc.path.clone(),
+                    ));
+
+                    tf_idfs.insert(word.to_string(), t_vec);
+                }
+            }
+        }
+        tf_idfs
+    }
+
+    fn create_word_map(documents: &Vec<Document>) -> WordMap {
+        let mut word_map: HashMap<String, i64> = HashMap::new();
+        for doc in documents.iter() {
+            for word in doc.word_freqs.keys() {
+                if word_map.contains_key(word) {
+                    let key_ref = word_map.get_mut(word).unwrap();
+                    *key_ref += 1;
+                } else {
+                    word_map.insert(word.clone().to_string(), 1);
+                }
+            }
+        }
+        word_map
+    }
+
 }
 
 #[derive(Debug)]
 enum ParserError {
-    XmlParserError { err: xml::reader::Error },
     HtmlParserError,
-    XHtmlParserError { err: xml::reader::Error },
+    XmlParserError { err: xml::reader::Error },
     PdfParserError,
     FileTypeError,
 }
@@ -101,7 +152,7 @@ impl Parser {
         let mut doc = String::from("");
         let er = EventReader::new(file);
         for event in er.into_iter() {
-            let event = event.map_err(|err| ParserError::XHtmlParserError { err: err })?;
+            let event = event.map_err(|err| ParserError::XmlParserError { err: err })?;
             if let XmlEvent::Characters(text) = event {
                 doc.push_str(&text);
             }
@@ -159,48 +210,10 @@ fn main() -> io::Result<()> {
     }
     dbg!(&docs_with_word);
 
-    let mut word_to_doc: HashMap<String, i64> = HashMap::new();
-    for doc in documents.iter() {
-        for word in doc.word_freqs.keys() {
-            if word_to_doc.contains_key(word) {
-                let key_ref = word_to_doc.get_mut(word).unwrap();
-                *key_ref += 1;
-            } else {
-                word_to_doc.insert(word.clone().to_string(), 1);
-            }
-        }
-    }
 
-    let mut tf_idfs: HashMap<String, Vec<(f32, DocPath)>> = HashMap::new();
-    for doc in documents.iter() {
-        for word in doc.word_freqs.keys() {
-            if tf_idfs.contains_key(word) {
-                let key_ref = tf_idfs.get_mut(word).unwrap();
-                key_ref.push((
-                    Indexer::calc_tf_idf(
-                        documents.len() as f32,
-                        word_to_doc.get(word).unwrap().clone() as f32,
-                        doc.word_freqs.get(word).unwrap().clone() as f32,
-                        doc.num_words.clone() as f32,
-                    ),
-                    doc.path.clone(),
-                ));
-            } else {
-                let mut t_vec: Vec<(f32, DocPath)> = Vec::new();
-                t_vec.push((
-                    Indexer::calc_tf_idf(
-                        documents.len() as f32,
-                        word_to_doc.get(word).unwrap().clone() as f32,
-                        doc.word_freqs.get(word).unwrap().clone() as f32,
-                        doc.num_words.clone() as f32,
-                    ),
-                    doc.path.clone(),
-                ));
+    let word_map = Indexer::create_word_map(&documents);
+    let tf_idfs = Indexer::create_tf_idfs(&documents, word_map);
 
-                tf_idfs.insert(word.to_string(), t_vec);
-            }
-        }
-    }
     println!("{:?}", tf_idfs.get("detailC").unwrap());
     // this is writes, but I am hitting a "unique word constraint fail..." I need to make it so
     // "word" isn't unique but rather the combination is? I should just set a primary key as "ID"
