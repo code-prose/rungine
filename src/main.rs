@@ -89,19 +89,15 @@ impl Parser {
         let file_ext = fp.split_at(idx).1;
 
         match file_ext {
-            ".xhtml" => Parser::parse_xhtml(file),
+            ".xhtml" => Parser::parse_xml(file),
+            ".xml" => Parser::parse_xml(file),
             ".html" => Parser::parse_html(file),
             ".pdf" => Parser::parse_pdf(file),
-            ".xml" => Parser::parse_xml(file),
             _ => Err(ParserError::FileTypeError),
         }
     }
 
     fn parse_xml(file: std::fs::File) -> Result<String, ParserError> {
-        todo!()
-    }
-
-    fn parse_xhtml(file: std::fs::File) -> Result<String, ParserError> {
         let mut doc = String::from("");
         let er = EventReader::new(file);
         for event in er.into_iter() {
