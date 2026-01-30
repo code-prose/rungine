@@ -161,6 +161,32 @@ impl Parser {
         Ok(Self::clean_text(doc))
     }
 
+    fn iter_dirs(dir_path: String) -> Result<Vec<Document>, std::io::Error> {
+        let mut documents = Vec::new();
+        let mut docs_with_word = HashMap::new();
+        for fp in std::fs::read_dir(&dir_path)? {
+            let fp = fp?.path();
+            let file = match open_file(&fp) {
+                Ok(f) => f,
+                Err(err) => {
+                    eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
+                    std::process::exit(1)
+                }
+            };
+            println!("{fp:?}");
+            let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
+            let (hmap, num_words) = Indexer::create_map(doc, &mut docs_with_word);
+
+            documents.push(Document {
+                path: fp.to_str().unwrap().to_string(),
+                num_words: num_words,
+                word_freqs: hmap,
+            });
+        }
+        Ok(documents)
+
+    }
+
     fn clean_text(mut text: String) -> String {
         text.remove_matches("\n");
         let single_space = Regex::new(r"\s+").unwrap().replace_all(&text, " ");
@@ -187,28 +213,7 @@ struct Parser;
 
 fn main() -> io::Result<()> {
     let dir = String::from("./tests/docs.gl/gl3/");
-    let mut documents = Vec::new();
-    let mut docs_with_word = HashMap::new();
-    for fp in std::fs::read_dir(&dir)? {
-        let fp = fp?.path();
-        let file = match open_file(&fp) {
-            Ok(f) => f,
-            Err(err) => {
-                eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
-                std::process::exit(1)
-            }
-        };
-        println!("{fp:?}");
-        let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
-        let (hmap, num_words) = Indexer::create_map(doc, &mut docs_with_word);
-
-        documents.push(Document {
-            path: fp.to_str().unwrap().to_string(),
-            num_words: num_words,
-            word_freqs: hmap,
-        });
-    }
-    dbg!(&docs_with_word);
+    let documents = Parser::iter_dirs(dir)?;
 
 
     let word_map = Indexer::create_word_map(&documents);
