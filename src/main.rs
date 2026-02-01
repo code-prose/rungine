@@ -74,7 +74,7 @@ impl Indexer {
         term_count / word_count
     }
 
-    fn create_tf_idfs(documents: &Vec<Document>, word_map: HashMap<String, i64>) -> TfIdf {
+    fn create_tf_idfs(documents: &Vec<Document>, word_map: &WordMap) -> TfIdf {
         let mut tf_idfs: HashMap<String, Vec<(f32, DocPath)>> = HashMap::new();
         for doc in documents.iter() {
             for word in doc.word_freqs.keys() {
@@ -211,21 +211,10 @@ fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Err
 
 struct Parser;
 
-fn main() -> io::Result<()> {
-    let dir = String::from("./tests/docs.gl/gl3/");
-    let documents = Parser::iter_dirs(dir)?;
+struct Writer;
 
-
-    let word_map = Indexer::create_word_map(&documents);
-    let tf_idfs = Indexer::create_tf_idfs(&documents, word_map);
-
-    println!("{:?}", tf_idfs.get("detailC").unwrap());
-    // this is writes, but I am hitting a "unique word constraint fail..." I need to make it so
-    // "word" isn't unique but rather the combination is? I should just set a primary key as "ID"
-    // and then maybe I can index on word?
-    // UPDATE:
-    // now using rowid... I still need to think up indexing on word?
-    {
+impl Writer {
+    fn write_index(word_map: &WordMap, tf_idfs: &TfIdf) {
         // use crate::schema::documents::dsl::*;
         use crate::schema::word_indexes::dsl::*;
         use diesel::prelude::*;
@@ -247,22 +236,32 @@ fn main() -> io::Result<()> {
 
         }
 
-
-
         let result = word_indexes
             .filter(word.ne("test1"))
             .load::<DocumentIndex>(&mut conn)
             .expect("Couldn't execute select * from documents");
 
-        println!("Displaying {} documents", result.len());
-        for res in result {
-            println!("{:?}", res);
-        }
+        // TODO: need to write word_map to db
 
-
-
+        // println!("Displaying {} documents", result.len());
+        // for res in result {
+        //     println!("{:?}", res);
+        // }
+        //
     }
+}
 
+fn main() -> io::Result<()> {
+    let dir = String::from("./tests/docs.gl/gl3/");
+    let documents = Parser::iter_dirs(dir)?;
+
+
+    let word_map = Indexer::create_word_map(&documents);
+    let tf_idfs = Indexer::create_tf_idfs(&documents, &word_map);
+
+    Writer::write_index(&word_map, &tf_idfs);
+
+    println!("{:?}", tf_idfs.get("detailC").unwrap());
     Ok(())
 }
 
