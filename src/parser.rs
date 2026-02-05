@@ -3,17 +3,10 @@ use regex::Regex;
 use std::fs::File;
 use std::path::Path;
 
-use lopdf::Document as Pdf;
-
 use crate::indexer::{Document, Indexer};
 use std::collections::HashMap;
+use pdf_extract;
 
-
-impl AsRef<Path> for std::fs::File {
-    fn as_ref(&self) -> &Path {
-        Ok(())
-    }
-}
 
 #[derive(Debug)]
 enum ParserError {
@@ -27,7 +20,7 @@ pub struct Parser;
 
 
 impl Parser {
-    fn parse<P: AsRef<Path> + std::io::Read>(file: P, fp: &str) -> Result<String, ParserError> {
+    fn parse<P: AsRef<Path>>(file: P, fp: &str) -> Result<String, ParserError> {
         let idx = fp.rfind('.').unwrap();
         let file_ext = fp.split_at(idx).1;
 
@@ -40,9 +33,10 @@ impl Parser {
         }
     }
 
-    fn parse_xml<P: AsRef<Path> + std::io::Read>(file: P) -> Result<String, ParserError> {
+    fn parse_xml<P: AsRef<Path>>(file: P) -> Result<String, ParserError> {
         let mut doc = String::from("");
-        let er = EventReader::new(file);
+        let f = File::open(file).unwrap();
+        let er = EventReader::new(f);
         for event in er.into_iter() {
             let event = event.map_err(|err| ParserError::XmlParserError { err: err })?;
             if let XmlEvent::Characters(text) = event {
@@ -58,15 +52,8 @@ impl Parser {
         let mut docs_with_word = HashMap::new();
         for fp in std::fs::read_dir(&dir_path)? {
             let fp = fp?.path();
-            let file = match open_file(&fp) {
-                Ok(f) => f,
-                Err(err) => {
-                    eprintln!("Failed to read content. Shutting down:\nError:\n{err}");
-                    std::process::exit(1)
-                }
-            };
             println!("{fp:?}");
-            let doc = Parser::parse(file, fp.clone().into_os_string().to_str().unwrap()).unwrap();
+            let doc = Parser::parse(&fp, fp.clone().into_os_string().to_str().unwrap()).unwrap();
             let (hmap, num_words) = Indexer::create_map(doc, &mut docs_with_word);
 
             documents.push(Document {
@@ -89,30 +76,11 @@ impl Parser {
         todo!()
     }
 
-    fn parse_pdf<P: AsRef<Path>>(file: P) -> Result<String, ParserError> {
-        let mut doc = String::from("");
-        match Pdf::load(file) {
-            Ok(document) => {
-                let pages = document.get_pages();
-     
-                for (i, _) in pages.iter().enumerate() {
-                    let page_number = (i + 1) as u32;
-                    let text = document.extract_text(&[page_number]);
-                    doc.push_str(&text.unwrap_or_default());
-                }
-                // could return page # for pdfs...
-     
-                println!("Text:\n{doc}");
-            }
-            Err(err) => eprintln!("Error: {}", err),
+    fn parse_pdf<P: AsRef<Path>>(path: P) -> Result<String, ParserError> {
+        let res = pdf_extract::extract_text(path);
+        match res {
+            Ok(content) => Ok(Parser::clean_text(content)),
+            Err(_) => Err(ParserError::PdfParserError)
         }
-        todo!()
-    }
-}
-
-fn open_file<P: AsRef<Path>>(file_name: P) -> Result<std::fs::File, std::io::Error> {
-    match File::open(file_name) {
-        Ok(contents) => Ok(contents),
-        Err(e) => Err(e),
     }
 }
