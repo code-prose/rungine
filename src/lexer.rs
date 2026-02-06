@@ -1,9 +1,9 @@
-struct Lexer {
-    content: [u8]
+struct Lexer<'a> {
+    content: &'a str
 }
 
-impl Lexer {
-    fn next(&self) -> [u8] {
+impl<'a> Lexer<'a> {
+    fn next(&self) -> &str {
         todo!()
     }
 }
