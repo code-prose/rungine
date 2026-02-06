@@ -12,6 +12,7 @@ mod models;
 mod parser;
 mod schema;
 mod writer;
+mod lexer;
 
 use crate::indexer::Indexer;
 use crate::parser::Parser;

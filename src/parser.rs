@@ -4,6 +4,7 @@ use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
 
 use crate::indexer::{Document, Indexer};
+use crate::lexer;
 use pdf_extract;
 use std::collections::HashMap;
 
