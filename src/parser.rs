@@ -1,12 +1,11 @@
-use xml::reader::{EventReader, XmlEvent};
 use regex::Regex;
 use std::fs::File;
 use std::path::Path;
+use xml::reader::{EventReader, XmlEvent};
 
 use crate::indexer::{Document, Indexer};
-use std::collections::HashMap;
 use pdf_extract;
-
+use std::collections::HashMap;
 
 #[derive(Debug)]
 enum ParserError {
@@ -17,7 +16,6 @@ enum ParserError {
 }
 
 pub struct Parser;
-
 
 impl Parser {
     fn parse<P: AsRef<Path>>(file: P, fp: &str) -> Result<String, ParserError> {
@@ -63,7 +61,6 @@ impl Parser {
             });
         }
         Ok(documents)
-
     }
 
     fn clean_text(mut text: String) -> String {
@@ -80,7 +77,7 @@ impl Parser {
         let res = pdf_extract::extract_text(path);
         match res {
             Ok(content) => Ok(Parser::clean_text(content)),
-            Err(_) => Err(ParserError::PdfParserError)
+            Err(_) => Err(ParserError::PdfParserError),
         }
     }
 }

@@ -1,5 +1,5 @@
-use std::intrinsics::log10f32;
 use std::collections::HashMap;
+use std::intrinsics::log10f32;
 
 type WordMap = HashMap<String, i64>;
 type TfIdf = HashMap<String, Vec<(f32, DocPath)>>;
@@ -103,5 +103,4 @@ impl Indexer {
         }
         word_map
     }
-
 }
