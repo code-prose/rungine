@@ -3,6 +3,7 @@ TF-IDF implemented in Rust!
 
 ## References
 - [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
+- [Lexer](https://en.wikipedia.org/wiki/Lexical_analysis)
 - [XML-RS](https://crates.io/crates/xml-rs)
 - [HTML Parser]()
 - [PDF Parser](https://github.com/jrmuizel/pdf-extract)

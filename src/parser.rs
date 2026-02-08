@@ -4,7 +4,7 @@ use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
 
 use crate::indexer::{Document, Indexer};
-use crate::lexer;
+use crate::lexer::Lexer;
 use pdf_extract;
 use std::collections::HashMap;
 
@@ -46,6 +46,17 @@ impl Parser {
         Ok(Self::clean_text(doc))
     }
 
+    fn clean_text(doc: String) -> String {
+        let content = doc.chars().collect::<Vec<_>>();
+        let mut cleaned = String::from("");
+        for token in Lexer::new(&content) {
+            cleaned.push_str(&token.iter().collect::<String>());
+            cleaned.push_str(" ");
+        }
+
+        cleaned
+    }
+
     pub fn iter_dirs(dir_path: String) -> Result<Vec<Document>, std::io::Error> {
         let mut documents = Vec::new();
         let mut docs_with_word = HashMap::new();
@@ -62,12 +73,6 @@ impl Parser {
             });
         }
         Ok(documents)
-    }
-
-    fn clean_text(mut text: String) -> String {
-        text.remove_matches("\n");
-        let single_space = Regex::new(r"\s+").unwrap().replace_all(&text, " ");
-        single_space.to_string()
     }
 
     fn parse_html<P: AsRef<Path>>(file: P) -> Result<String, ParserError> {
