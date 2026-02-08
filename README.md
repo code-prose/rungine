@@ -17,7 +17,7 @@ TF-IDF implemented in Rust!
 - [x] Create tf-idfs
 - [x] Creating word -> sorted tf-idf mapping (Index)
 - [x] Write to DB? (NoSQL?)
-- [ ] Better "word" splitting [create_map](./src/main.rs:52) (Outdated link) - Solution: [Lexer](./src/lexer.rs)
+- [x] Better "word" splitting [create_map](./src/main.rs:52) (Outdated link) - Solution: [Lexer](./src/lexer.rs)
 - [ ] Multithread?
 - [x] PDF Support
 - [ ] HTML support
