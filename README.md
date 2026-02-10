@@ -21,3 +21,5 @@ TF-IDF implemented in Rust!
 - [ ] Multithread?
 - [x] PDF Support
 - [ ] HTML support
+- [ ] Testing using idiomatic rust instead of functional
+- [ ] Clean up non-idomatic rust - i.e. `to_str().clone()....bullshit`
