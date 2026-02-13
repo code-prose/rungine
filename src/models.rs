@@ -1,10 +1,11 @@
 use crate::schema::{documents, word_indexes};
+use chrono::NaiveDateTime;
 
 #[derive(Insertable)]
 #[table_name = "documents"]
 pub struct NewDocuments<'a> {
     pub name: &'a str,
-    pub modified_date: &'a str,
+    pub modified_date: NaiveDateTime,
 }
 
 #[derive(Debug, Queryable, AsChangeset)]
@@ -12,7 +13,7 @@ pub struct NewDocuments<'a> {
 pub struct Documents {
     pub rowid: i32,
     pub name: String,
-    pub modified_date: String,
+    pub modified_date: NaiveDateTime,
 }
 
 #[derive(Insertable)]

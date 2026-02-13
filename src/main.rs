@@ -25,7 +25,7 @@ fn main() -> io::Result<()> {
     let word_map = Indexer::create_word_map(&documents);
     let tf_idfs = Indexer::create_tf_idfs(&documents, &word_map);
 
-    Writer::write_index(&word_map, &tf_idfs);
+    Writer::write_index(&documents, &tf_idfs);
 
     println!("{:?}", tf_idfs.get("detailC").unwrap());
     Ok(())

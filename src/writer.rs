@@ -2,6 +2,8 @@ use crate::db::establish_connection;
 use crate::models::{DocumentIndex, NewDocumentIndex};
 use crate::models::{Documents, NewDocuments};
 use std::collections::HashMap;
+use crate::indexer::Document;
+use std::fs;
 
 type DocPath = String;
 type TfIdf = HashMap<String, Vec<(f32, DocPath)>>;
@@ -10,8 +12,8 @@ type WordMap = HashMap<String, i64>;
 pub struct Writer;
 
 impl Writer {
-    pub fn write_index(word_map: &WordMap, tf_idfs: &TfIdf) {
-        // use crate::schema::documents::dsl::*;
+    pub fn write_index(docs: &Vec<Document>, tf_idfs: &TfIdf) -> Result<()> {
+        use crate::schema::documents::dsl::*;
         use crate::schema::word_indexes::dsl::*;
         use diesel::prelude::*;
         let mut conn = establish_connection();
@@ -25,22 +27,30 @@ impl Writer {
                 diesel::insert_into(word_indexes)
                     .values(&new_index)
                     .execute(&mut conn)
-                    .expect("Error saving document");
+                    .expect("Error saving tf-idf mapping");
             }
         }
 
-        let result = word_indexes
+        let _ = word_indexes
             .filter(word.ne("test1"))
             .load::<DocumentIndex>(&mut conn)
             .expect("Couldn't execute select * from documents");
 
-        // TODO: need to write word_map to db
+        for d in docs.iter() {
+            let metadata = fs::metadata(&d.path)?;
+            let new_document = NewDocuments {
+                name: &d.path,
+                modified_date: metadata.modified()?
 
-        // println!("Displaying {} documents", result.len());
-        // for res in result {
-        //     println!("{:?}", res);
-        // }
-        //
+            };
+            diesel::insert_into(documents)
+                .values(&new_document)
+                .execute(&mut conn)
+                .expect("Error saving document");
+        }
+
+        Ok(())
+
     }
 }
 
