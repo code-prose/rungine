@@ -1,18 +1,19 @@
 use crate::db::establish_connection;
+use crate::indexer::Document;
 use crate::models::{DocumentIndex, NewDocumentIndex};
 use crate::models::{Documents, NewDocuments};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use std::collections::HashMap;
-use crate::indexer::Document;
 use std::fs;
+use std::time::SystemTime;
 
 type DocPath = String;
 type TfIdf = HashMap<String, Vec<(f32, DocPath)>>;
-type WordMap = HashMap<String, i64>;
 
 pub struct Writer;
 
 impl Writer {
-    pub fn write_index(docs: &Vec<Document>, tf_idfs: &TfIdf) -> Result<()> {
+    pub fn write_index(docs: &Vec<Document>, tf_idfs: &TfIdf) -> std::io::Result<()> {
         use crate::schema::documents::dsl::*;
         use crate::schema::word_indexes::dsl::*;
         use diesel::prelude::*;
@@ -31,17 +32,17 @@ impl Writer {
             }
         }
 
-        let _ = word_indexes
-            .filter(word.ne("test1"))
+        let res_index = word_indexes
+            .filter(word.ne("placeholder"))
             .load::<DocumentIndex>(&mut conn)
             .expect("Couldn't execute select * from documents");
+        println!("{res_index:?}");
 
         for d in docs.iter() {
             let metadata = fs::metadata(&d.path)?;
             let new_document = NewDocuments {
                 name: &d.path,
-                modified_date: metadata.modified()?
-
+                modified_date: to_naive_dt(metadata.modified().expect("Expected a NaiveDateTime")),
             };
             diesel::insert_into(documents)
                 .values(&new_document)
@@ -49,33 +50,17 @@ impl Writer {
                 .expect("Error saving document");
         }
 
-        Ok(())
+        let res_docs = documents
+            .filter(name.ne("placeholder"))
+            .load::<Documents>(&mut conn)
+            .expect("Couldn't execute select * from documents");
+        println!("{res_docs:?}");
 
+        Ok(())
     }
 }
 
-fn db_tester() {
-    use crate::schema::documents::dsl::*;
-    use diesel::prelude::*;
-    let mut conn = establish_connection();
-
-    let new_document = NewDocuments {
-        name: "test2",
-        modified_date: "2026-01-29",
-    };
-
-    diesel::insert_into(documents)
-        .values(&new_document)
-        .execute(&mut conn)
-        .expect("Error saving document");
-
-    let result = documents
-        .filter(name.ne("test1"))
-        .load::<Documents>(&mut conn)
-        .expect("Couldn't execute select * from documents");
-
-    println!("Displaying {} documents", result.len());
-    for res in result {
-        println!("{:?}", res);
-    }
+fn to_naive_dt(time: SystemTime) -> NaiveDateTime {
+    let utc: DateTime<Utc> = time.into();
+    utc.naive_utc()
 }
