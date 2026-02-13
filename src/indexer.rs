@@ -15,17 +15,12 @@ pub struct Document {
 pub struct Indexer;
 
 impl Indexer {
-    // this is so so at best... Seems my parsing will need to improve in the future
-    // I should implement a lexer to handle this
     pub fn create_map(
-        text: String,
+        text: Vec<String>,
         document_frequency: &mut HashMap<String, i64>,
-    ) -> (HashMap<String, i64>, i64) {
+    ) -> HashMap<String, i64> {
         let mut hmap = HashMap::new();
-        // this is pretty naive, it's breaking up function calls right now
-        let word_iter = text.split_whitespace();
-        let num_words = word_iter.clone().count();
-        for word in text.split_whitespace() {
+        for word in text.iter() {
             if hmap.contains_key(word) {
                 let key_ref = hmap.get_mut(word).unwrap();
                 *key_ref += 1;
@@ -40,7 +35,7 @@ impl Indexer {
                 }
             }
         }
-        (hmap, num_words as i64)
+        hmap
     }
 
     fn calc_tf_idf(num_docs: f32, num_docs_appear: f32, term_count: f32, word_count: f32) -> f32 {

@@ -19,7 +19,7 @@ enum ParserError {
 pub struct Parser;
 
 impl Parser {
-    fn parse<P: AsRef<Path>>(file: P, fp: &str) -> Result<String, ParserError> {
+    fn parse<P: AsRef<Path>>(file: P, fp: &str) -> Result<Vec<String>, ParserError> {
         let idx = fp.rfind('.').unwrap();
         let file_ext = fp.split_at(idx).1;
 
@@ -32,7 +32,7 @@ impl Parser {
         }
     }
 
-    fn parse_xml<P: AsRef<Path>>(file: P) -> Result<String, ParserError> {
+    fn parse_xml<P: AsRef<Path>>(file: P) -> Result<Vec<String>, ParserError> {
         let mut doc = String::from("");
         let f = File::open(file).unwrap();
         let er = EventReader::new(f);
@@ -46,12 +46,11 @@ impl Parser {
         Ok(Self::clean_text(doc))
     }
 
-    fn clean_text(doc: String) -> String {
+    fn clean_text(doc: String) -> Vec<String> {
         let content = doc.chars().collect::<Vec<_>>();
-        let mut cleaned = String::from("");
+        let mut cleaned: Vec<String> = Vec::new();
         for token in Lexer::new(&content) {
-            cleaned.push_str(&token.iter().collect::<String>());
-            cleaned.push_str(" ");
+            cleaned.push(token.iter().collect::<String>());
         }
 
         cleaned
@@ -64,7 +63,8 @@ impl Parser {
             let fp = fp?.path();
             println!("{fp:?}");
             let doc = Parser::parse(&fp, fp.clone().into_os_string().to_str().unwrap()).unwrap();
-            let (hmap, num_words) = Indexer::create_map(doc, &mut docs_with_word);
+            let num_words = doc.iter().len() as i64;
+            let hmap = Indexer::create_map(doc, &mut docs_with_word);
 
             documents.push(Document {
                 path: fp.to_str().unwrap().to_string(),
@@ -75,11 +75,11 @@ impl Parser {
         Ok(documents)
     }
 
-    fn parse_html<P: AsRef<Path>>(file: P) -> Result<String, ParserError> {
+    fn parse_html<P: AsRef<Path>>(file: P) -> Result<Vec<String>, ParserError> {
         todo!()
     }
 
-    fn parse_pdf<P: AsRef<Path>>(path: P) -> Result<String, ParserError> {
+    fn parse_pdf<P: AsRef<Path>>(path: P) -> Result<Vec<String>, ParserError> {
         let res = pdf_extract::extract_text(path);
         match res {
             Ok(content) => Ok(Parser::clean_text(content)),
