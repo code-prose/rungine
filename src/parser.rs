@@ -1,4 +1,3 @@
-use regex::Regex;
 use std::fs::File;
 use std::path::Path;
 use xml::reader::{EventReader, XmlEvent};
@@ -10,7 +9,7 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 enum ParserError {
-    HtmlParserError,
+    HtmlParserError, // need to finish this
     XmlParserError { err: xml::reader::Error },
     PdfParserError,
     FileTypeError,
