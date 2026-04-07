@@ -15,7 +15,6 @@ impl<'a> Lexer<'a> {
     }
 
     fn next_token(&mut self) -> Option<&'a [char]> {
-        // trimming whitespace
         self.trim_left();
         if self.content.is_empty() {
             return None;
